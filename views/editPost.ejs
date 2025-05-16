@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Post</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .image-preview:hover .remove-image {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <%- include('./partials/navbar.ejs') %>
+
+  <!-- Main Content -->
+  <div class="pt-20 px-4 md:px-6">
+    <div class="max-w-2xl mx-auto">
+      <div class="bg-white rounded-xl shadow-md p-8">
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-2xl font-bold text-gray-900">Edit Post</h1>
+          <a
+            href="/user/posts/delete/<%= post._id %>"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+          >
+            Delete Post
+          </a>
+        </div>
+        
+        <form action="/user/posts/update/<%= post._id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
+          <!-- Post Content -->
+          <div>
+            <label for="content" class="block text-sm font-medium text-gray-700 mb-1">
+              Content
+            </label>
+            <textarea
+              id="content"
+              name="content"
+              rows="6"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              required
+            ><%= post.content %></textarea>
+          </div>
+
+          
+          <% if (post.image) { %>
+            <div class="relative image-preview" id="current-image">
+              <img
+                src="data:image/jpeg;base64,<%= post.image.toString('base64') %>"
+                alt="Current post image"
+                class="w-full h-auto rounded-lg shadow-sm"
+              />
+            </div>
+          <% } %>
+
+          <!-- New Image Upload -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              <%= post.image ? 'Change Image' : 'Add Image' %>
+            </label>
+            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-indigo-500 transition-colors duration-200">
+              <div class="space-y-1 text-center">
+                <i class="fas fa-image text-gray-400 text-3xl mb-3"></i>
+                <div class="flex text-sm text-gray-600">
+                  <label for="image-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                    <span>Upload a file</span>
+                    <input
+                      id="image-upload"
+                      name="image"
+                      type="file"
+                      accept="image/*"
+                      class="sr-only"
+                    />
+                  </label>
+                  <p class="pl-1">or drag and drop</p>
+                </div>
+                <p class="text-xs text-gray-500">
+                  PNG, JPG, GIF up to 10MB
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Image Preview -->
+          <div id="new-image-preview" class="hidden relative image-preview">
+            <img src="" alt="New image preview" class="w-full h-auto rounded-lg shadow-sm"/>
+            <button
+              type="button"
+              onclick="removeNewImage()"
+              class="remove-image absolute top-2 right-2 bg-red-500 text-white rounded-full p-2 opacity-0 transition-opacity duration-200 hover:bg-red-600"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex justify-end space-x-4 pt-4">
+            <a
+              href="/user/profile"
+              class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+            >
+              Cancel
+            </a>
+            <button
+              type="submit"
+              class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Handle new image preview
+    const imageUpload = document.getElementById('image-upload');
+    const newImagePreview = document.getElementById('new-image-preview');
+    
+    imageUpload.addEventListener('change', function(e) {
+      if (e.target.files && e.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          newImagePreview.querySelector('img').src = e.target.result;
+          newImagePreview.classList.remove('hidden');
+        };
+        reader.readAsDataURL(e.target.files[0]);
+      }
+    });
+
+
+    // Drag and drop functionality
+    const dropZone = document.querySelector('.border-dashed');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+      dropZone.classList.add('border-indigo-500');
+    }
+
+    function unhighlight(e) {
+      dropZone.classList.remove('border-indigo-500');
+    }
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+
+      if (files && files[0]) {
+        imageUpload.files = files;
+        const event = new Event('change');
+        imageUpload.dispatchEvent(event);
+      }
+    }
+  </script>
+</body>
+</html>
