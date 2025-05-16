@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "engines": {
-    "node" : "20.x"
+    "node": "20.x"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -16,13 +16,13 @@
   "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "config": "^4.0.0",
     "connect-mongo": "^5.1.0",
     "dotenv": "^16.5.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.1",
     "mongoose": "^8.14.3",
-    "multer": "^1.4.5-lts.2"
+    "multer": "^1.4.5-lts.2",
+    "serverless-http": "^3.2.0"
   }
 }
