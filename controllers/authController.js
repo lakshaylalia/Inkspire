@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const userModel = require("../models/userModel.js");
 const adminModel = require("../models/adminModel.js");
+const { isAdmin } = require("../middlewares/isAdmin.js");
 
 module.exports.login = async (req, res) => {
   try {
@@ -42,6 +43,7 @@ module.exports.login = async (req, res) => {
       req.session.user = {
         email: user.email,
         id: user._id,
+        isAdmin: false,
       };
 
       return res.status(200).redirect("/user/posts/all-posts");

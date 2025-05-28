@@ -28,19 +28,46 @@ module.exports.addPost = async (req, res) => {
   }
 };
 
-module.exports.getAllPosts = async (req, res) => {
+module.exports.renderAllPosts = async (req, res) => {
   try {
     const posts = await postModel
       .find()
       .populate("owner", "username image")
       .sort({ createdAt: -1 });
-
-    res.render("posts", { posts });
+    const userId = req.session.user.id;
+    let user = await userModel.findOne({ _id: userId });
+    let following = user.following;
+    res.render("posts", { posts, userId, following});
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: "Something went wrong, please try again" });
   }
 };
+
+module.exports.getAllPosts = async (req, res) => {
+  try {
+    let posts = await postModel
+      .find()
+      .populate("owner", "username image")
+      .sort({ createdAt: -1 });
+
+    posts = posts.map(post => {
+      const postObj = post.toObject(); 
+
+      if (postObj.owner.image) {
+        postObj.owner.imageBase64 = postObj.owner.image.toString("base64");
+        delete postObj.owner.image; 
+      }
+      return postObj;
+    });
+
+    return res.status(200).json({ posts });
+  } catch (err) {
+    return res.status(500).send({ message: "Something went wrong, please try again" });
+  }
+};
+
+
 
 module.exports.renderEditPost = async (req, res) => {
   try {
@@ -114,16 +141,80 @@ module.exports.deletePost = async (req, res) => {
 module.exports.likePost = async (req, res) => {
   try {
     const id = req.params.id;
+    const userId = req.session.user.id;
+    let liked;
 
-    let post = await postModel.findOneAndUpdate(
-      { _id: id },
-      { $inc: { likes: 1 } },
-      { new: true }
-    );
+    let post = await postModel.findOne({ _id: id });
+    if (post.likes.includes(userId)) {
+      post.likes.pull(userId);
+      liked = false;
+    } else {
+      post.likes.push(userId);
+      liked = true;
+    }
+    await post.save();
 
-    res.status(200).json({ likes: post.likes });
+    res.status(200).json({ likes: post.likes.length, liked });
   } catch (err) {
     console.log(err);
-    return res.status(500).send({ message: "Something went wrong, please try again" });
+    return res
+      .status(500)
+      .send({ message: "Something went wrong, please try again" });
+  }
+};
+
+module.exports.renderCommmentPost = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.session.user.id;
+    let post = await postModel
+      .findOne({ _id: postId })
+      .populate("owner")
+      .populate("comment.commentedBy");
+    res.status(200).render("comments", { post, userId });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: "Something went wrong, please try again" });
+  }
+};
+
+module.exports.addComment = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.session.user.id;
+    const { content } = req.body;
+
+    if (!content)
+      return res.status(400).send({ message: "Content is required" });
+
+    const comment = {
+      text: content,
+      commentedBy: userId,
+    };
+
+    let post = await postModel.findOne({ _id: postId });
+    post.comment.push(comment);
+
+    await post.save();
+    res.status(200).send({ message: "Comment Added Successfully" });
+  } catch (err) {
+    return res
+      .status(500)
+      .send({ message: "Something went wrong, PLease Try again later" });
+  }
+};
+
+module.exports.renderAllComments = async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.session.user.id;
+    let post = await postModel
+      .findOne({ _id: postId })
+      .populate("owner")
+      .populate("comment.commentedBy");
+    res.status(200).json({ post, userId });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: "Something went wrong, please try again" });
   }
 };

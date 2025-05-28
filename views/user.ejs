@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title><%= user.username %>'s Profile</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-gray-200 fixed w-full z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center">
+            <a href="/" class="text-2xl font-bold text-gray-900"> Medium </a>
+          </div>
+          <div class="flex items-center space-x-4">
+            <a href="/explore" class="text-gray-600 hover:text-gray-900"
+              >Explore</a
+            >
+            <% if (user) { %>
+            <a href="/profile/<%= user._id %>" class="flex items-center">
+              <% if (user.image) { %>
+              <img
+                class="w-8 h-8 rounded-full object-cover"
+                src="data:image/jpeg;base64,<%= user.image.toString('base64') %>"
+                alt="Your profile"
+              />
+              <% } else { %>
+              <div
+                class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center"
+              >
+                <span class="text-gray-600 font-semibold"
+                  ><%= user.username.charAt(0).toUpperCase() %></span
+                >
+              </div>
+              <% } %>
+            </a>
+            <% } else { %>
+            <a href="/login" class="text-gray-600 hover:text-gray-900">Login</a>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <%- include ('./partials/navbar.ejs') %>
+
+    <!-- Profile Header -->
+    <div class="pt-16 pb-8 px-4">
+      <div class="max-w-4xl mx-auto">
+        <div
+          class="flex flex-col md:flex-row items-center md:items-start gap-8 py-8"
+        >
+          <!-- Profile Picture -->
+          <div class="flex-shrink-0">
+            <% if (user.image) { %>
+            <img
+              class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white shadow-lg"
+              src="data:image/jpeg;base64,<%= user.image.toString('base64') %>"
+              alt="<%= user.username %>'s profile picture"
+            />
+            <% } else { %>
+            <div
+              class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg"
+            >
+              <span class="text-gray-500 text-4xl font-bold"
+                ><%= user.username.charAt(0).toUpperCase() %></span
+              >
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Profile Info -->
+          <div class="flex-grow text-center md:text-left">
+            <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+              <h1 class="text-2xl font-bold text-gray-900">
+                <%= user.username %>
+              </h1>
+              <% if (User.id == user.id) { %>
+              <a
+                href="/user/edit-profile"
+                class="px-4 py-2 bg-gray-100 rounded-lg text-gray-700 hover:bg-gray-200 transition duration-200 text-sm font-medium"
+              >
+                Edit Profile
+              </a>
+              <% } else { %>
+              <button
+                class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200 text-sm font-medium bg-gray-200 text-gray-800 hover:bg-gray-300'"
+                onclick="toggleFollow('<%= user._id %>')"
+              >
+                Follow
+              </button>
+              <% } %>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex justify-center md:justify-start space-x-8 mb-6">
+              <div class="text-center">
+                <div class="font-bold text-gray-900"><%= posts.length %></div>
+                <div class="text-gray-600 text-sm">posts</div>
+              </div>
+              <button class="text-center" onclick="showFollowers()">
+                <div class="font-bold text-gray-900">
+                  <%= user.followers ? user.followers.length : 0 %>
+                </div>
+                <div class="text-gray-600 text-sm">followers</div>
+              </button>
+              <button class="text-center" onclick="showFollowing()">
+                <div class="font-bold text-gray-900">
+                  <%= user.following ? user.following.length : 0 %>
+                </div>
+                <div class="text-gray-600 text-sm">following</div>
+              </button>
+            </div>
+
+            <!-- Bio -->
+            <div class="max-w-lg">
+              <div class="font-medium text-gray-900"><%= user.name %></div>
+              <% if (user.bio) { %>
+              <p class="text-gray-600 whitespace-pre-line"><%= user.bio %></p>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="border-t border-gray-200">
+      <div class="max-w-6xl mx-auto px-4 py-8">
+        <% if (posts.length === 0) { %>
+        <div class="text-center py-12">
+          <div class="text-gray-400 mb-4">
+            <i class="fas fa-camera text-5xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-700 mb-2">No Posts Yet</h3>
+          <p class="text-gray-500">
+            When <%= user.username %> posts, you'll see their photos here.
+          </p>
+        </div>
+        <% } else { %>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <% posts.forEach(post => { %>
+          <a
+            href="/user/posts/comment/<%= post._id %>"
+            class="block group relative aspect-square"
+          >
+            <% if (post.image) { %>
+            <img
+              src="data:image/jpeg;base64,<%= post.image.toString('base64') %>"
+              alt="Post by <%= user.username %>"
+              class="w-full h-full object-cover rounded-lg"
+            />
+            <div
+              class="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-50 group-hover:bg-black/50 transition-all duration-200 flex items-center justify-center rounded-lg"
+            >
+              <div
+                class="opacity-0 group-hover:opacity-100 text-white flex items-center space-x-6"
+              >
+                <div class="flex items-center">
+                  <i class="fas fa-heart mr-2"></i>
+                  <span><%= post.likes.length || 0 %></span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-comment mr-2"></i>
+                  <span><%= post.comments ? post.comments.length : 0 %></span>
+                </div>
+              </div>
+            </div>
+            <% } else { %>
+            <div
+              class="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center"
+            >
+              <div class="text-center text-gray-400">
+                <i class="fas fa-file-alt text-3xl mb-2"></i>
+                <p class="text-sm">Text Post</p>
+              </div>
+            </div>
+            <% } %>
+          </a>
+          <% }); %>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Followers Slider -->
+    <div class="mt-6 px-4" id="followersDiv">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-semibold">Followers</h3>
+        <button
+          onclick="hideDiv('followersDiv')"
+          class="text-sm text-gray-500 hover:text-gray-800"
+        >
+          Close
+        </button>
+      </div>
+
+      <div class="flex space-x-4 overflow-x-auto scrollbar-hide">
+        <% if (user.followers && user.followers.length > 0) { %> <%
+        user.followers.forEach(follower => { %>
+        <div
+          class="min-w-[150px] bg-white border rounded-xl p-3 flex-shrink-0 shadow-sm"
+        >
+          <a
+            href="/profile/<%= follower._id %>"
+            class="flex flex-col items-center text-center space-y-2"
+          >
+            <% if (follower.image) { %>
+            <img
+              src="data:image/jpeg;base64,<%= follower.image.toString('base64') %>"
+              alt="<%= follower.username %>'s profile picture"
+              class="w-16 h-16 rounded-full object-cover"
+            />
+            <% } else { %>
+            <div
+              class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center"
+            >
+              <span class="text-gray-500 text-xl font-semibold"
+                ><%= follower.username.charAt(0).toUpperCase() %></span
+              >
+            </div>
+            <% } %>
+
+            <div>
+              <div class="font-medium text-gray-900 text-sm">
+                <%= follower.username %>
+              </div>
+              <div class="text-xs text-gray-500"><%= follower.name %></div>
+            </div>
+          </a>
+
+          <% if (user && user._id.toString() !== follower._id.toString()) { %>
+          <button
+            onclick="toggleFollow('<%= follower._id %>')"
+            class="mt-2 w-full text-xs font-medium rounded-md px-2 py-1 transition-all duration-200 <%= user.following.includes(follower._id) ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white hover:bg-blue-600' %>"
+          >
+            <%= user.following.includes(follower._id) ? 'Following' : 'Follow'
+            %>
+          </button>
+          <% } %>
+        </div>
+        <% }) %> <% } else { %>
+        <div class="text-gray-500">No followers yet</div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Following Slider -->
+    <div class="mt-6 px-4" id="followingDiv">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-lg font-semibold">Following</h3>
+        <button
+          onclick="hideDiv('followingDiv')"
+          class="text-sm text-gray-500 hover:text-gray-800"
+        >
+          Close
+        </button>
+      </div>
+
+      <div class="flex space-x-4 overflow-x-auto scrollbar-hide">
+        <% if (user.following && user.following.length > 0) { %> <%
+        user.following.forEach(following => { %>
+        <div
+          class="min-w-[150px] bg-white border rounded-xl p-3 flex-shrink-0 shadow-sm"
+        >
+          <a
+            href="/profile/<%= following._id %>"
+            class="flex flex-col items-center text-center space-y-2"
+          >
+            <% if (following.image) { %>
+            <img
+              src="data:image/jpeg;base64,<%= following.image.toString('base64') %>"
+              alt="<%= following.username %>'s profile picture"
+              class="w-16 h-16 rounded-full object-cover"
+            />
+            <% } else { %>
+            <div
+              class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center"
+            >
+              <span class="text-gray-500 text-xl font-semibold"
+                ><%= following.username.charAt(0).toUpperCase() %></span
+              >
+            </div>
+            <% } %>
+            <div>
+              <div class="font-medium text-gray-900 text-sm">
+                <%= following.username %>
+              </div>
+              <div class="text-xs text-gray-500"><%= following.name %></div>
+            </div>
+          </a>
+
+          <% if (user && user._id.toString() !== following._id.toString()) { %>
+          <button
+            onclick="toggleFollow('<%= following._id %>')"
+            class="mt-2 w-full text-xs font-medium rounded-md px-2 py-1 transition-all duration-200 <%= user.following.includes(following._id) ? 'bg-gray-200 text-gray-800' : 'bg-blue-500 text-white hover:bg-blue-600' %>"
+          >
+            <%= user.following.includes(following._id) ? 'Following' : 'Follow'
+            %>
+          </button>
+          <% } %>
+        </div>
+        <% }) %> <% } else { %>
+        <div class="text-gray-500">Not following anyone yet</div>
+        <% } %>
+      </div>
+    </div>
+
+    <script>
+
+      function hideDiv(divId){
+        let div = document.getElementById(`${divId}`);
+        div.classList.add("hidden");
+      }
+
+      <!-- function() -->
+
+        async function toggleFollow(userId) {
+          try {
+            const response = await fetch(`/profile/${userId}/follow`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (response.ok) {
+              window.location.reload();
+            } else {
+              throw new Error("Failed to toggle follow");
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to update follow status. Please try again.");
+          }
+        }
+
+        window.onclick = function (event) {
+          const followersModal = document.getElementById("followersModal");
+          const followingModal = document.getElementById("followingModal");
+
+          if (event.target === followersModal) {
+            hideFollowers();
+          }
+          if (event.target === followingModal) {
+            hideFollowing();
+          }
+        };
+    </script>
+  </body>
+</html>

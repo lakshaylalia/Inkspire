@@ -10,6 +10,10 @@ const adminModel = mongoose.Schema(
       type: String,
       required: true,
     },
+    name : {
+      type : String,
+      required: true,
+    },
     isAdmin: {
         type: Boolean,
         required: true,

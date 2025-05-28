@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      data-rh="true"
+      rel="icon"
+      href="https://miro.medium.com/v2/5d8de952517e8160e40ef9841c781cdc14a5db313057fa3c3de41c6f5b494b19"
+    />
+    <title>Add Comment</title>
+    <style>
+      body,
+      #main-content {
+        padding-bottom: 100px; /* same height as the fixed form container */
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 text-gray-800">
+    <%- include('./partials/navbar.ejs') %>
+
+    <!-- Post Details Section -->
+    <div class="max-w-2xl mx-auto p-4 relative top-16">
+      <div class="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
+        <!-- Post Header -->
+        <div class="p-5 pb-3 flex items-center space-x-4">
+          <!-- Author Image -->
+          <a href="/user/profile/<%= post.owner._id %>" class="flex-shrink-0">
+            <% if (post.owner.image) { %>
+            <img
+              class="w-12 h-12 rounded-full object-cover border-2 border-indigo-500"
+              src="data:image/jpeg;base64,<%= post.owner.image.toString('base64') %>"
+            />
+            <% } else { %>
+            <div
+              class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-indigo-200"
+            >
+              <span class="text-indigo-500 font-bold text-lg"
+                ><%= post.owner.username.charAt(0).toUpperCase() %></span
+              >
+            </div>
+            <% } %>
+          </a>
+
+          <!-- Username and Time -->
+          <div class="flex-grow">
+            <a
+              href="/profile/<%= post.owner._id %>"
+              class="font-semibold text-gray-800 hover:text-indigo-600"
+              ><%= post.owner.username %></a
+            >
+            <div class="text-sm text-gray-500 opacity-75">
+              <% const now = new Date(); const postDate = new
+              Date(post.createdAt); const diffSec = Math.floor((now - postDate)
+              / 1000); const diffMin = Math.floor(diffSec / 60); const diffHours
+              = Math.floor(diffMin / 60); const diffDays = Math.floor(diffHours
+              / 24); let timeAgo = diffSec < 60 ? `${diffSec}s ago` : diffMin <
+              60 ? `${diffMin}m ago` : diffHours < 24 ? `${diffHours}h ago` :
+              diffDays < 7 ? `${diffDays}d ago` : postDate.toLocaleDateString();
+              %>
+              <i class="far fa-clock mr-1 text-indigo-400"></i> <%= timeAgo %>
+              <span class="mx-1.5">•</span>
+              <i class="far fa-calendar-alt mr-1 text-indigo-400"></i> <%=
+              postDate.toLocaleString('en-US', { month: 'short', day: 'numeric',
+              hour: '2-digit', minute: '2-digit' }) %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post Content -->
+        <div class="px-5 py-3">
+          <p class="text-gray-800 whitespace-pre-line"><%= post.content %></p>
+        </div>
+
+        <!-- Post Image -->
+        <% if (post.image) { %>
+        <div class="px-5 py-3">
+          <img
+            class="w-full object-contain max-h-[500px]"
+            src="data:image/jpeg;base64,<%= post.image.toString('base64') %>"
+            alt="Post Image"
+          />
+        </div>
+        <% } %>
+
+        <!-- Likes & Comments Count -->
+        <div
+          class="px-5 py-2 border-t border-gray-100 text-sm text-gray-500 flex justify-between"
+        >
+          <div>
+            <button
+              id="<%= post._id %>-like"
+              onclick="likePost('<%= post._id %>')"
+              class="like-button w-full py-3 text-gray-700 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
+            >
+              <% if (post.likes.indexOf(userId) !== -1) { %>
+              <i class="fas fa-heart text-red-500 mr-2"></i>
+              <% } else { %>
+              <i class="far fa-heart text-gray-500 mr-2"></i>
+              <% } %>
+              <span id="like-count-<%= post._id %>"
+                ><%= post.likes.length || 0 %></span
+              >
+            </button>
+          </div>
+          <div>
+            <i class="fas fa-comment text-indigo-400 mr-1"></i><span id="postCommentCount"><%=
+            post.comment.length %></span> comments
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments Section -->
+      <h2 class="text-2xl font-semibold mb-4">Comments</h2>
+
+      <!-- Show All Comments -->
+      <div
+        class="mb-6 space-y-4"
+        data-post-id="<%= post._id %>"
+        id="comment-Container"
+      ></div>
+
+      <!-- Comment Form -->
+      <div
+        class="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-md border-t z-50 max-w-3xl mx-auto"
+      >
+        <form
+          action="/user/posts/comment/add/<%= post._id %>"
+          method="POST"
+          id="comment-form"
+          data-post-id="<%= post._id %>"
+          class="flex gap-2"
+        >
+          <textarea
+            name="content"
+            rows="1"
+            required
+            placeholder="Write your comment..."
+            class="flex-grow resize-none border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+          <button
+            type="submit"
+            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Add
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("comment-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const postId = e.target.dataset.postId;
+
+          const content = e.target.elements.content.value;
+
+          const res = await fetch("/user/posts/comment/add/" + postId, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content }),
+          });
+
+          const response = await res.json();
+          if (response.message === "Comment Added Successfully") {
+            let count = document.getElementById("postCommentCount");
+            count.innerText = parseInt(count.innerText) + 1;
+            renderComments();
+            e.target.reset();
+          }
+        });
+
+      async function renderComments() {
+        let commentBox = document.getElementById("comment-Container");
+        const postId = commentBox.dataset.postId;
+
+        try {
+          const response = await fetch(`/user/posts/all-comments/${postId}`);
+          const data = await response.json();
+
+          renderCommentsUI(data.post.comment, commentBox);
+        } catch (error) {
+          console.error("Failed to fetch comments:", error);
+        }
+      }
+
+      function renderCommentsUI(comments, container) {
+        container.innerHTML = "";
+
+        comments.forEach((comment) => {
+          const commentDiv = document.createElement("div");
+          commentDiv.classList.add("bg-white", "p-3", "rounded", "shadow");
+
+          commentDiv.innerHTML = `
+     <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200">
+  <p class="text-gray-800 text-base leading-relaxed mb-2">${comment.text}</p>
+  <p class="text-sm text-gray-500">
+    By <span class="font-semibold text-indigo-600">@${
+      comment.commentedBy.username
+    }</span> 
+    <time class="ml-2" datetime="${comment.commentedAt}">
+      ${new Date(comment.commentedAt).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })}
+    </time>
+  </p>
+</div>
+
+    `;
+
+          container.appendChild(commentDiv);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        renderComments();
+      });
+
+      async function likePost(postId) {
+        try {
+          const response = await fetch(`/user/posts/all-posts/like/${postId}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            const countEl = document.getElementById(`like-count-${postId}`);
+            countEl.textContent = data.likes;
+            let btn = document.getElementById(`${postId}-like`);
+            if (data.liked) {
+              btn.innerHTML = `<i class="fas fa-heart text-red-500 mr-2"></i><span id="like-count-<%= post._id %>">${data.likes}</span>`;
+            } else {
+              btn.innerHTML = `<i class="far fa-heart text-gray-500 mr-2"></i> <span id="like-count-<%= post._id %>">${data.likes}</span>`;
+            }
+          } else {
+            console.error("Failed to like post");
+          }
+        } catch (err) {
+          console.error("Error:", err);
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -7,7 +7,7 @@ const commentSchema = new mongoose.Schema({
   },
   commentedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "user",
     required: true,
   },
   commentedAt: {
@@ -26,10 +26,10 @@ const postSchema = mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
     },
-    likes: {
-      type: Number,
-      default: 0,
-    },
+    likes: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    }],
     comment: [commentSchema],
     image: {
       type: Buffer,

@@ -12,7 +12,7 @@ require("dotenv").config();
 const db = require("./config/mongoose-connection.js");
 const userModel = require("./models/userModel.js");
 
-process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
 app.set("view engine", "ejs");
 
@@ -42,9 +42,7 @@ app.use((req, res) => {
 
 
 
-// app.listen(port, () => {
-//   console.log(`Server is running on port ${port}`);
-// });
+app.listen(port, '0.0.0.0');
 
 
-module.exports = app;
+// module.exports = app;

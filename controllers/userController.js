@@ -1,6 +1,7 @@
 const postModel = require("../models/postModel.js");
 const userModel = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
+const { post } = require("../routes/indexRoutes.js");
 
 module.exports.renderEditProfile = async (req, res) => {
   try {
@@ -58,10 +59,12 @@ module.exports.updateImage = async (req, res) => {
       { $set: { image: req.file.buffer } },
       { new: true, runValidators: true }
     );
+    
+    const base64Image = user.image.toString('base64');
+    const mimeType = req.file.mimetype;
+   
 
-    await user.save();
-
-    res.status(200).redirect("/user/profile");
+    res.status(200).json({image: `data:${mimeType};base64,${base64Image}`});
   } catch (err) {
     res.status(500).send({ message: "Something went wrong" });
   }
@@ -79,7 +82,7 @@ module.exports.getProfile = async (req, res) => {
     const posts = await userModel
       .findOne({ email: req.session.user.email })
       .populate("posts");
-    // res.json(user)
+  
     res.render("UserProfile", { user, imageBase64 });
   } catch (err) {
     res.redirect("/login");
@@ -91,9 +94,10 @@ module.exports.deleteAccount = async (req, res) => {
     const id = req.params.id;
 
     await userModel.findByIdAndDelete(id);
-
+    
     await postModel.deleteMany({ owner: id });
 
+  
     req.session.destroy((err) => {
       if (err) {
         return res.status(500).send({ message: "Error ending session." });
@@ -107,4 +111,62 @@ module.exports.deleteAccount = async (req, res) => {
   }
 };
 
+module.exports.displayUser = async (req, res) =>{
+  try{
+    let id = req.params.id;
+    let user = await userModel.findOne({_id: id}).populate("following followers");
+    let posts = await postModel.find({owner: id});
+    
+    let imageBase64 = null;
+    if(user.image) {
+      imageBase64 = user.image.toString("base64");
+    }
+    res.status(200).render("user", { user, imageBase64, posts });
+  } catch(err) {
+    return res.status(500).send({ message: "Something went wrong, Try again later" });
+  }
+}
+
+module.exports.getAllUsers = async (req, res) => {
+    try {
+      let users = await userModel.find();
+      users = users.map(user =>{
+        const userObj = user.toObject();
+        if(user.image){
+          userObj.imageBase64 = userObj.image.toString('base64');
+          delete userObj.image;
+        }
+        return userObj;
+      })
+  
+      return res.status(200).json({users});
+    } catch(err) {
+      return res.status(500).json({ message: err.message });
+    }
+}
+
+module.exports.handleFollow = async (req, res) => {
+  try {
+    let id = req.session.user.id;
+    let user = await userModel.findOne({ _id: id });
+    let actionId = req.params.id;
+    let actionUser = await userModel.findOne({ _id: actionId });
+    if (user.following.includes(actionId)) {
+      // unfollow
+      user.following = user.following.filter(followerId => String(followerId) !== String(actionId));
+      actionUser.followers = actionUser.followers.filter(followerId => String(followerId) !== String(id));
+    } else {
+      // follow
+      user.following.push(actionId);
+      actionUser.followers.push(id);
+    }
+
+    await user.save();
+    await actionUser.save();
+    return res.status(200).json({ following: user.following });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send({ message: "Something went wrong, try again later." });
+  }
+};
 
