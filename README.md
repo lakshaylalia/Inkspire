@@ -29,6 +29,21 @@ Inkspire is a full-stack content-sharing web application inspired by Medium. It 
 
 ---
 
+## 📂 Folder Structure
+   ```bin
+      inkspire/
+├── config/
+├── controllers/
+├── middlewares    
+├── models/           
+├── routes/           
+├── views/              
+├── public/            
+├── .env               
+├── server.js          
+└── package.json  
+```
+---
 
 ## 🧪 Installation & Setup
 
