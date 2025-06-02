@@ -15,6 +15,7 @@ const userModel = require("./models/userModel.js");
 const port = process.env.PORT || 3000;
 
 app.set("view engine", "ejs");
+app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
