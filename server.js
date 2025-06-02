@@ -6,7 +6,8 @@ const indexRoutes = require("./routes/indexRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
 const {isAuthenticated} = require('./middlewares/isAuthenticated.js');
-const {isAdmin} = require('./middlewares/isAdmin.js')
+const {isAdmin} = require('./middlewares/isAdmin.js');
+const cors = require('cors');
 
 require("dotenv").config();
 const db = require("./config/mongoose-connection.js");
