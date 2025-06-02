@@ -83,7 +83,7 @@ module.exports.getProfile = async (req, res) => {
       .findOne({ email: req.session.user.email })
       .populate("posts");
   
-    res.render("UserProfile.ejs", { user, imageBase64 });
+    res.render("userProfile", { user, imageBase64 });
   } catch (err) {
     res.redirect("/login");
   }
