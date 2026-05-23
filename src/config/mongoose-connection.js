@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGO_URI_WEB)
+// mongoose.connect(process.env.MONGO_URI_WEB)
+// .then(() => console.log('Connected to MongoDB...')) 
+// .catch((err) => console.log(err));
+
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('Connected to MongoDB...')) 
 .catch((err) => console.log(err));
 

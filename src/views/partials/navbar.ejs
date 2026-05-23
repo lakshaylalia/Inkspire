@@ -1,64 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      data-rh="true"
-      rel="icon"
-      href="https://miro.medium.com/v2/5d8de952517e8160e40ef9841c781cdc14a5db313057fa3c3de41c6f5b494b19"
-    />
-    <title>Document</title>
-  </head>
-  <body>
-    <nav class="bg-white border-b border-gray-200 fixed w-full z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <!-- Left side -->
-          <div class="flex items-center">
-            <a href="/" class="text-2xl font-bold text-gray-900"> Medium </a>
-            <div class="hidden md:flex items-center space-x-8 ml-10">
-              <a href="/" class="text-gray-600 hover:text-gray-900">Home</a>
-              <a
-                href="/user/posts/all-posts"
-                class="text-gray-600 hover:text-gray-900"
-                >All Posts</a
-              >
-              <a href="/bookmarks" class="text-gray-600 hover:text-gray-900"
-                >Bookmarks</a
-              >
-
-              <% if(User.isAdmin) {%>
-                <a href="/admin" class="text-gray-600 hover:text-gray-900"
-                >Admin Dashboard</a
-              >
-                <%} %>
+<nav class="backdrop-blur-md bg-white/80 border-b border-slate-100 fixed top-0 w-full z-50 transition-all duration-300">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      
+      <!-- Left side: Brand Logo & Links -->
+      <div class="flex items-center space-x-8">
+        <a href="/" class="flex items-center space-x-2 text-2xl font-black tracking-tight text-slate-900 hover:opacity-90 transition-opacity">
+          <span class="bg-slate-900 text-white w-8 h-8 rounded-lg flex items-center justify-center font-serif text-lg shadow-sm">M</span>
+          <span class="font-serif font-semibold text-xl tracking-tight hidden sm:inline-block">MediumClone</span>
+        </a>
+        
+        <!-- Main Navigation Links -->
+        <div class="hidden md:flex items-center space-x-6">
+          <a href="/" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200">
+            Home
+          </a>
+          <a href="/user/posts/all-posts" class="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200">
+            All Posts
+          </a>
           
-            </div>
-          </div>
-
-          <!-- Right side -->
-          <div class="flex items-center space-x-6">
-            <button class="text-gray-600 hover:text-gray-900">
-              <i class="fas fa-search text-xl"></i>
-            </button>
-
-            <a
-              href="/user/profile"
-              class="hidden md:block bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition duration-200"
-            >
-              Write
+          <% if (typeof User !== 'undefined' && User && User.isAdmin) { %>
+            <a href="/admin" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200 flex items-center space-x-1">
+              <span class="inline-block w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+              <span>Admin Panel</span>
             </a>
-            <a
-              href="/logout"
-              class="hidden md:block bg-red-500 text-white py-2 px-5 rounded-full font-medium hover:bg-red-600 transition-all shadow-sm cursor-pointer duration-300"
-            >
-              Log out
-            </a>
-            
-          </div>
+          <% } %>
         </div>
       </div>
-    </nav>
-  </body>
-</html>
+
+      <!-- Right side: Search & User Controls -->
+      <div class="flex items-center space-x-4">
+        <!-- Interactive Search Bar -->
+        <div class="relative hidden sm:block">
+          <input 
+            type="text" 
+            placeholder="Search stories..." 
+            class="w-48 md:w-64 pl-9 pr-4 py-1.5 text-sm bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:bg-white transition-all duration-300"
+          />
+          <i class="fas fa-search absolute left-3.5 top-2.5 text-slate-400 text-xs"></i>
+        </div>
+
+        <button class="sm:hidden text-slate-600 hover:text-slate-900 p-2 transition-colors">
+          <i class="fas fa-search text-lg"></i>
+        </button>
+
+        <% if (typeof User !== 'undefined' && User) { %>
+          <!-- Write Button -->
+          <a
+            href="/user/profile"
+            class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition-all duration-200 shadow-sm shadow-emerald-500/10 flex items-center space-x-1.5"
+          >
+            <i class="far fa-edit"></i>
+            <span>Write</span>
+          </a>
+
+          <!-- Logout Button -->
+          <a
+            href="/logout"
+            class="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 border border-rose-100 px-3.5 py-2 rounded-full transition-all duration-200 cursor-pointer"
+          >
+            Log out
+          </a>
+        <% } else { %>
+          <a href="/login" class="text-sm font-medium text-slate-700 hover:text-slate-900 px-3 py-2 transition-colors">
+            Sign In
+          </a>
+          <a href="/register" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
+            Get Started
+          </a>
+        <% } %>
+      </div>
+      
+    </div>
+  </div>
+</nav>

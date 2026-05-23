@@ -8,7 +8,7 @@ module.exports.addPost = async (req, res) => {
     if (!content)
       return res.status(400).send({ message: "Content is required" });
 
-    const id = req.session.user.id;
+    const id = req.user.id;
     const user = await userModel.findOne({ _id: id });
 
     const postData = {
@@ -33,8 +33,9 @@ module.exports.renderAllPosts = async (req, res) => {
     const posts = await postModel
       .find()
       .populate("owner", "username image")
+      .populate("comment.commentedBy", "username image")
       .sort({ createdAt: -1 });
-    const userId = req.session.user.id;
+    const userId = req.user.id;
     let user = await userModel.findOne({ _id: userId });
     let following = user.following;
     res.render("posts", { posts, userId, following});
@@ -118,7 +119,7 @@ module.exports.deletePost = async (req, res) => {
   try {
     const id = req.params.id;
 
-    let email = req.session.user.email;
+    let email = req.user.email;
 
     await postModel.findOneAndDelete({ _id: id });
     let user = await userModel.findOneAndUpdate(
@@ -141,7 +142,7 @@ module.exports.deletePost = async (req, res) => {
 module.exports.likePost = async (req, res) => {
   try {
     const id = req.params.id;
-    const userId = req.session.user.id;
+    const userId = req.user.id;
     let liked;
 
     let post = await postModel.findOne({ _id: id });
@@ -166,7 +167,7 @@ module.exports.likePost = async (req, res) => {
 module.exports.renderCommmentPost = async (req, res) => {
   try {
     const postId = req.params.id;
-    const userId = req.session.user.id;
+    const userId = req.user.id;
     let post = await postModel
       .findOne({ _id: postId })
       .populate("owner")
@@ -181,7 +182,7 @@ module.exports.renderCommmentPost = async (req, res) => {
 module.exports.addComment = async (req, res) => {
   try {
     const postId = req.params.id;
-    const userId = req.session.user.id;
+    const userId = req.user.id;
     const { content } = req.body;
 
     if (!content)
@@ -207,7 +208,7 @@ module.exports.addComment = async (req, res) => {
 module.exports.renderAllComments = async (req, res) => {
   try {
     const postId = req.params.id;
-    const userId = req.session.user.id;
+    const userId = req.user.id;
     let post = await postModel
       .findOne({ _id: postId })
       .populate("owner")

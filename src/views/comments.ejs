@@ -13,48 +13,69 @@
       rel="icon"
       href="https://miro.medium.com/v2/5d8de952517e8160e40ef9841c781cdc14a5db313057fa3c3de41c6f5b494b19"
     />
-    <title>Add Comment</title>
+    <link 
+      href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" 
+      rel="stylesheet"
+    />
+    <title>Discussions & Comments - MediumClone</title>
     <style>
-      body,
-      #main-content {
-        padding-bottom: 100px; /* same height as the fixed form container */
+      body {
+        font-family: 'Inter', sans-serif;
+        padding-bottom: 90px;
+      }
+      .font-serif-editorial {
+        font-family: 'Lora', Georgia, serif;
+      }
+      .comments-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #f8fafc;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 9999px;
       }
     </style>
   </head>
-  <body class="bg-gray-100 text-gray-800">
+  <body class="bg-slate-50/50 text-slate-800 antialiased custom-scrollbar">
     <%- include('./partials/navbar.ejs') %>
 
-    <!-- Post Details Section -->
+    <!-- Post details & comments feed -->
     <div class="max-w-2xl mx-auto p-4 relative top-16">
-      <div class="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
+      
+      <!-- Parent Post card -->
+      <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm mb-8 mt-6">
+        
         <!-- Post Header -->
         <div class="p-5 pb-3 flex items-center space-x-4">
-          <!-- Author Image -->
           <a href="/user/profile/<%= post.owner._id %>" class="flex-shrink-0">
             <% if (post.owner.image) { %>
             <img
-              class="w-12 h-12 rounded-full object-cover border-2 border-indigo-500"
+              class="w-11 h-11 rounded-full object-cover border border-slate-100 ring-2 ring-emerald-500/10"
               src="data:image/jpeg;base64,<%= post.owner.image.toString('base64') %>"
+              alt="Author"
             />
             <% } else { %>
             <div
-              class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center border-2 border-indigo-200"
+              class="w-11 h-11 rounded-full bg-emerald-50 text-emerald-700 font-bold text-base flex items-center justify-center border border-emerald-100"
             >
-              <span class="text-indigo-500 font-bold text-lg"
-                ><%= post.owner.username.charAt(0).toUpperCase() %></span
-              >
+              <span><%= post.owner.username.charAt(0).toUpperCase() %></span>
             </div>
             <% } %>
           </a>
 
-          <!-- Username and Time -->
+          <!-- Username & Time -->
           <div class="flex-grow">
             <a
-              href="/profile/<%= post.owner._id %>"
-              class="font-semibold text-gray-800 hover:text-indigo-600"
+              href="/user/profile/<%= post.owner._id %>"
+              class="font-semibold text-sm text-slate-800 hover:text-emerald-600 transition-colors"
               ><%= post.owner.username %></a
             >
-            <div class="text-sm text-gray-500 opacity-75">
+            <div class="text-xs text-slate-400 mt-0.5">
               <% const now = new Date(); const postDate = new
               Date(post.createdAt); const diffSec = Math.floor((now - postDate)
               / 1000); const diffMin = Math.floor(diffSec / 60); const diffHours
@@ -63,103 +84,105 @@
               60 ? `${diffMin}m ago` : diffHours < 24 ? `${diffHours}h ago` :
               diffDays < 7 ? `${diffDays}d ago` : postDate.toLocaleDateString();
               %>
-              <i class="far fa-clock mr-1 text-indigo-400"></i> <%= timeAgo %>
+              <i class="far fa-clock mr-1 text-slate-350"></i> <%= timeAgo %>
               <span class="mx-1.5">•</span>
-              <i class="far fa-calendar-alt mr-1 text-indigo-400"></i> <%=
-              postDate.toLocaleString('en-US', { month: 'short', day: 'numeric',
-              hour: '2-digit', minute: '2-digit' }) %>
+              <span class="text-slate-400"><%= postDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></span>
             </div>
           </div>
         </div>
 
         <!-- Post Content -->
         <div class="px-5 py-3">
-          <p class="text-gray-800 whitespace-pre-line"><%= post.content %></p>
+          <p class="text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-line font-serif-editorial"><%= post.content %></p>
         </div>
 
         <!-- Post Image -->
         <% if (post.image) { %>
         <div class="px-5 py-3">
-          <img
-            class="w-full object-contain max-h-[500px]"
-            src="data:image/jpeg;base64,<%= post.image.toString('base64') %>"
-            alt="Post Image"
-          />
+          <div class="relative rounded-2xl overflow-hidden bg-slate-50 border border-slate-100/50 shadow-sm max-h-[360px] flex items-center justify-center">
+            <img
+              class="w-full h-full object-cover max-h-[350px]"
+              src="data:image/jpeg;base64,<%= post.image.toString('base64') %>"
+              alt="Post Image"
+            />
+          </div>
         </div>
         <% } %>
 
-        <!-- Likes & Comments Count -->
+        <!-- Likes & Comments count footer -->
         <div
-          class="px-5 py-2 border-t border-gray-100 text-sm text-gray-500 flex justify-between"
+          class="px-5 py-2.5 border-t border-slate-100 text-xs text-slate-450 flex justify-between bg-slate-50/20"
         >
           <div>
             <button
               id="<%= post._id %>-like"
               onclick="likePost('<%= post._id %>')"
-              class="like-button w-full py-3 text-gray-700 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
+              class="flex items-center text-slate-650 hover:text-rose-500 transition-colors font-bold"
             >
               <% if (post.likes.indexOf(userId) !== -1) { %>
-              <i class="fas fa-heart text-red-500 mr-2"></i>
+              <i class="fas fa-heart text-rose-500 mr-1.5"></i>
               <% } else { %>
-              <i class="far fa-heart text-gray-500 mr-2"></i>
+              <i class="far fa-heart text-slate-450 mr-1.5"></i>
               <% } %>
-              <span id="like-count-<%= post._id %>"
+              <span id="like-count-<%= post._id %>" class="text-slate-700 font-semibold"
                 ><%= post.likes.length || 0 %></span
               >
             </button>
           </div>
-          <div>
-            <i class="fas fa-comment text-indigo-400 mr-1"></i><span id="postCommentCount"><%=
-            post.comment.length %></span> comments
+          <div class="font-semibold text-slate-600">
+            <i class="far fa-comment text-emerald-500 mr-1.5"></i><span id="postCommentCount" class="font-bold text-slate-700"><%=
+            post.comment.length %></span> discussions
           </div>
         </div>
       </div>
 
-      <!-- Comments Section -->
-      <h2 class="text-2xl font-semibold mb-4">Comments</h2>
+      <!-- Discussions Section Title -->
+      <h2 class="text-base font-serif-editorial font-bold mb-4 text-slate-900 border-b border-slate-100 pb-2">Discussions</h2>
 
-      <!-- Show All Comments -->
+      <!-- Comments Container -->
       <div
-        class="mb-6 space-y-4"
+        class="mb-10 space-y-4"
         data-post-id="<%= post._id %>"
         id="comment-Container"
       ></div>
 
-      <!-- Comment Form -->
+      <!-- Floating glass uploader form -->
       <div
-        class="fixed bottom-0 left-0 right-0 bg-white p-4 shadow-md border-t z-50 max-w-3xl mx-auto"
+        class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md px-4 py-3.5 border-t border-slate-150 z-50 shadow-lg"
       >
-        <form
-          action="/user/posts/comment/add/<%= post._id %>"
-          method="POST"
-          id="comment-form"
-          data-post-id="<%= post._id %>"
-          class="flex gap-2"
-        >
-          <textarea
-            name="content"
-            rows="1"
-            required
-            placeholder="Write your comment..."
-            class="flex-grow resize-none border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          ></textarea>
-          <button
-            type="submit"
-            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+        <div class="max-w-2xl mx-auto">
+          <form
+            action="/user/posts/comment/add/<%= post._id %>"
+            method="POST"
+            id="comment-form"
+            data-post-id="<%= post._id %>"
+            class="flex items-center space-x-3"
           >
-            Add
-          </button>
-        </form>
+            <textarea
+              name="content"
+              rows="1"
+              required
+              placeholder="Join the discussion..."
+              class="flex-grow resize-none border border-slate-205 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-550/10 focus:border-emerald-500 text-slate-700 leading-relaxed bg-slate-50/50 focus:bg-white transition-all"
+            ></textarea>
+            <button
+              type="submit"
+              class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-sm shadow-emerald-500/10 cursor-pointer"
+            >
+              Post
+            </button>
+          </form>
+        </div>
       </div>
     </div>
 
+    <!-- Scripts -->
     <script>
       document
         .getElementById("comment-form")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
           const postId = e.target.dataset.postId;
-
           const content = e.target.elements.content.value;
 
           const res = await fetch("/user/posts/comment/add/" + postId, {
@@ -194,28 +217,47 @@
       function renderCommentsUI(comments, container) {
         container.innerHTML = "";
 
+        if (comments.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-8 text-slate-400 bg-white border border-slate-100 rounded-2xl p-6">
+              <i class="far fa-comments text-2xl mb-2 text-slate-300"></i>
+              <p class="text-xs">No comments yet. Start the discussion!</p>
+            </div>
+          `;
+          return;
+        }
+
         comments.forEach((comment) => {
           const commentDiv = document.createElement("div");
-          commentDiv.classList.add("bg-white", "p-3", "rounded", "shadow");
+          commentDiv.classList.add("bg-white", "p-4", "rounded-2xl", "border", "border-slate-100", "shadow-sm", "comments-card");
+
+          const commenter = comment.commentedBy || { username: 'Anonymous' };
+          const avatarHTML = commenter.image
+            ? `<img src="data:image/jpeg;base64,${commenter.image.toString('base64')}" class="w-7 h-7 rounded-full object-cover border border-slate-200" alt="Avatar"/>`
+            : `<div class="w-7 h-7 rounded-full bg-emerald-50 text-emerald-700 font-bold text-[10px] flex items-center justify-center border border-emerald-100">
+                <span>${commenter.username.charAt(0).toUpperCase()}</span>
+               </div>`;
 
           commentDiv.innerHTML = `
-     <div class="bg-white p-4 rounded-lg shadow-md border border-gray-200">
-  <p class="text-gray-800 text-base leading-relaxed mb-2">${comment.text}</p>
-  <p class="text-sm text-gray-500">
-    By <span class="font-semibold text-indigo-600">@${
-      comment.commentedBy.username
-    }</span> 
-    <time class="ml-2" datetime="${comment.commentedAt}">
-      ${new Date(comment.commentedAt).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })}
-    </time>
-  </p>
-</div>
-
-    `;
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0 mt-0.5">
+                ${avatarHTML}
+              </div>
+              <div class="flex-grow min-w-0">
+                <div class="flex items-center space-x-2">
+                  <span class="text-xs font-semibold text-slate-800">@${commenter.username}</span>
+                  <span class="text-slate-300 text-[10px]">•</span>
+                  <span class="text-[10px] text-slate-400 font-medium">
+                    ${new Date(comment.commentedAt).toLocaleDateString('en-US', {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                </div>
+                <p class="text-slate-700 text-xs sm:text-sm mt-1.5 leading-relaxed font-serif-editorial">${comment.text}</p>
+              </div>
+            </div>
+          `;
 
           container.appendChild(commentDiv);
         });
@@ -238,11 +280,12 @@
           if (response.ok) {
             const countEl = document.getElementById(`like-count-${postId}`);
             countEl.textContent = data.likes;
+            
             let btn = document.getElementById(`${postId}-like`);
             if (data.liked) {
-              btn.innerHTML = `<i class="fas fa-heart text-red-500 mr-2"></i><span id="like-count-<%= post._id %>">${data.likes}</span>`;
+              btn.innerHTML = `<i class="fas fa-heart text-rose-500 mr-1.5 animate-pulse"></i><span id="like-count-${postId}" class="text-slate-700 font-semibold">${data.likes}</span>`;
             } else {
-              btn.innerHTML = `<i class="far fa-heart text-gray-500 mr-2"></i> <span id="like-count-<%= post._id %>">${data.likes}</span>`;
+              btn.innerHTML = `<i class="far fa-heart text-slate-450 mr-1.5"></i><span id="like-count-${postId}" class="text-slate-700 font-semibold">${data.likes}</span>`;
             }
           } else {
             console.error("Failed to like post");

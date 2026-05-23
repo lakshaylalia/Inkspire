@@ -3,61 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Join Medium</title>
-      <link
-      data-rh="true"
-      rel="icon"
-      href="https://miro.medium.com/v2/5d8de952517e8160e40ef9841c781cdc14a5db313057fa3c3de41c6f5b494b19"
-    />
+  <link
+    data-rh="true"
+    rel="icon"
+    href="https://miro.medium.com/v2/5d8de952517e8160e40ef9841c781cdc14a5db313057fa3c3de41c6f5b494b19"
+  />
+  <title>Create Account - MediumClone</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gt+Alpina:wght@300;400;500;600;700&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    .font-gt-alpina { font-family: 'Gt Alpina', serif; }
-    
-    .animate-fade-up {
-      animation: fadeUp 0.5s ease-out;
+    body {
+      font-family: 'Inter', sans-serif;
     }
-    
+    .font-serif-editorial {
+      font-family: 'Lora', Georgia, serif;
+    }
+    .animate-fade-up {
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
     @keyframes fadeUp {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
-    
-    .input-focus-within:focus-within {
-      border-color: #1a8917;
-    }
-    
-    .transition-smooth {
-      transition: all 0.2s ease-in-out;
+    .input-focus:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
     }
   </style>
 </head>
-<body class="bg-white min-h-screen flex flex-col items-center justify-center px-4">
-  <div class="w-full max-w-[440px] animate-fade-up">
-    
-    <div class="text-center mb-12">
-      <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-black mb-4">
-        <span class="text-white text-2xl font-bold">M</span>
+<body class="bg-slate-50/50 min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden">
+  <!-- Radial background details -->
+  <div class="absolute -right-24 -top-24 w-96 h-96 rounded-full bg-emerald-500/5 blur-3xl"></div>
+  <div class="absolute -left-24 -bottom-24 w-96 h-96 rounded-full bg-indigo-500/5 blur-3xl"></div>
+
+  <div class="w-full max-w-[420px] animate-fade-up relative z-10 bg-white border border-slate-100/80 rounded-3xl p-8 sm:p-10 shadow-xl shadow-slate-900/5">
+    <!-- Brand Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-950 mb-4 shadow-md shadow-slate-955/20">
+        <span class="text-white text-xl font-serif-editorial font-bold">M</span>
       </div>
-      <h1 class="text-[32px] font-gt-alpina font-bold text-gray-900 mb-2">Join Medium</h1>
-      <p class="text-gray-500 text-lg">Enter your details to create an account.</p>
+      <h1 class="text-3xl font-serif-editorial font-bold text-slate-900 mb-2">Create Account</h1>
+      <p class="text-slate-450 text-xs sm:text-sm font-serif-editorial italic">Join our publishing community today</p>
     </div>
 
-    <form action="/register" method="POST" class="space-y-6">
-      <div class="space-y-5">
+    <!-- Registration form -->
+    <form action="/register" method="POST" class="space-y-4">
+      <div class="space-y-3.5">
         <div class="relative">
           <input 
             type="text" 
             name="name" 
             required 
             placeholder="Full name"
-            class="w-full px-5 py-3.5 text-gray-900 bg-white border border-gray-200 rounded-full focus:outline-none focus:border-[#1a8917] focus:ring-1 focus:ring-[#1a8917] transition-smooth text-lg"
+            class="w-full px-5 py-3 text-slate-800 bg-slate-55/30 border border-slate-200 rounded-xl focus:outline-none input-focus transition-all duration-200 text-sm"
           />
         </div>
 
@@ -67,7 +72,7 @@
             name="username" 
             required 
             placeholder="Username"
-            class="w-full px-5 py-3.5 text-gray-900 bg-white border border-gray-200 rounded-full focus:outline-none focus:border-[#1a8917] focus:ring-1 focus:ring-[#1a8917] transition-smooth text-lg"
+            class="w-full px-5 py-3 text-slate-800 bg-slate-55/30 border border-slate-200 rounded-xl focus:outline-none input-focus transition-all duration-200 text-sm"
           />
         </div>
 
@@ -77,7 +82,7 @@
             name="email" 
             required 
             placeholder="Email address"
-            class="w-full px-5 py-3.5 text-gray-900 bg-white border border-gray-200 rounded-full focus:outline-none focus:border-[#1a8917] focus:ring-1 focus:ring-[#1a8917] transition-smooth text-lg"
+            class="w-full px-5 py-3 text-slate-800 bg-slate-55/30 border border-slate-200 rounded-xl focus:outline-none input-focus transition-all duration-200 text-sm"
           />
         </div>
 
@@ -87,50 +92,31 @@
             name="password" 
             required 
             placeholder="Password"
-            class="w-full px-5 py-3.5 text-gray-900 bg-white border border-gray-200 rounded-full focus:outline-none focus:border-[#1a8917] focus:ring-1 focus:ring-[#1a8917] transition-smooth text-lg"
+            class="w-full px-5 py-3 text-slate-800 bg-slate-55/30 border border-slate-200 rounded-xl focus:outline-none input-focus transition-all duration-200 text-sm"
           />
         </div>
       </div>
 
       <button 
         type="submit" 
-        class="w-full bg-[#1a8917] hover:bg-[#156912] text-white text-lg font-medium py-3.5 px-6 rounded-full transition-smooth flex items-center justify-center group"
+        class="w-full bg-slate-900 hover:bg-slate-850 text-white text-sm font-semibold py-3 px-6 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg shadow-slate-950/10 cursor-pointer"
       >
-        Create account
+        Create Account
       </button>
-
-      <!-- <div class="relative flex items-center justify-center my-8">
-        <div class="border-t border-gray-200 absolute w-full"></div>
-        <span class="bg-white px-4 text-sm text-gray-500 relative">or</span>
-      </div>
-
-      <div class="space-y-4">
-        <button 
-          type="button" 
-          class="w-full border border-gray-200 hover:border-gray-300 bg-white text-gray-700 text-lg font-medium py-3.5 px-6 rounded-full transition-smooth flex items-center justify-center space-x-3"
-        >
-          <span>Sign up with Google</span>
-        </button>
-
-        <button 
-          type="button" 
-          class="w-full border border-gray-200 hover:border-gray-300 bg-white text-gray-700 text-lg font-medium py-3.5 px-6 rounded-full transition-smooth flex items-center justify-center space-x-3"
-        >
-          <span>Sign up with Facebook</span>
-        </button>
-      </div> -->
     </form>
 
-    <p class="mt-8 text-center text-[15px] text-gray-500">
-      Already have an account?
-      <a href="/login" class="text-[#1a8917] hover:text-[#156912] font-medium transition-smooth">Sign in</a>
-    </p>
+    <div class="mt-8 text-center space-y-3 border-t border-slate-100 pt-6">
+      <p class="text-xs text-slate-500">
+        Already have an account? 
+        <a href="/login" class="text-emerald-600 hover:text-emerald-700 font-bold transition-all duration-150">Sign In</a>
+      </p>
+    </div>
 
-    <p class="mt-8 text-center text-sm text-gray-500">
-      By signing up, you agree to our
-      <a href="/terms" class="text-gray-700 hover:text-gray-900 underline">Terms of Service</a>
-      and
-      <a href="/privacy" class="text-gray-700 hover:text-gray-900 underline">Privacy Policy</a>.
+    <p class="mt-8 text-center text-[10px] text-slate-400 leading-relaxed">
+      By signing up, you agree to our 
+      <a href="/terms" class="text-slate-600 hover:underline font-medium">Terms of Service</a>
+      and acknowledge our
+      <a href="/privacy" class="text-slate-600 hover:underline font-medium">Privacy Policy</a>.
     </p>
   </div>
 </body>

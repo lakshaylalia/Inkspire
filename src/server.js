@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const path = require("path");
-const session = require("express-session");
+const cookieParser = require("cookie-parser");
 const indexRoutes = require("./routes/indexRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const adminRoutes = require("./routes/adminRoutes.js");
@@ -22,18 +22,7 @@ app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: false,
-    },
-  })
-
-);
+app.use(cookieParser());
 
 app.use("/", indexRoutes);
 app.use('/user',isAuthenticated, userRoutes);

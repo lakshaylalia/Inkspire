@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const userModel = require("../models/userModel.js");
 const adminModel = require("../models/adminModel.js");
-const { isAdmin } = require("../middlewares/isAdmin.js");
 
 module.exports.login = async (req, res) => {
   try {
@@ -16,11 +16,12 @@ module.exports.login = async (req, res) => {
       const isMatch = password === admin.password;
 
       if (isMatch) {
-        req.session.user = {
-          email: admin.email,
-          id: admin._id,
-          isAdmin: true,
-        };
+        const token = jwt.sign(
+          { email: admin.email, id: admin._id, isAdmin: true },
+          process.env.JWT_SECRET,
+          { expiresIn: "24h" }
+        );
+        res.cookie("token", token, { httpOnly: true, secure: false });
         return res.redirect("/admin");
       }
     }
@@ -40,11 +41,12 @@ module.exports.login = async (req, res) => {
         return res.status(401).send("Invalid Credentials");
       }
 
-      req.session.user = {
-        email: user.email,
-        id: user._id,
-        isAdmin: false,
-      };
+      const token = jwt.sign(
+        { email: user.email, id: user._id, isAdmin: false },
+        process.env.JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+      res.cookie("token", token, { httpOnly: true, secure: false });
 
       return res.status(200).redirect("/user/posts/all-posts");
     });
@@ -86,10 +88,12 @@ module.exports.register = async (req, res) => {
           password: hash,
         });
 
-        req.session.user = {
-          email: user.email,
-          id: user._id,
-        };
+        const token = jwt.sign(
+          { email: user.email, id: user._id, isAdmin: false },
+          process.env.JWT_SECRET,
+          { expiresIn: "24h" }
+        );
+        res.cookie("token", token, { httpOnly: true, secure: false });
         res.status(200).redirect("/user/profile");
       });
     });
@@ -99,14 +103,6 @@ module.exports.register = async (req, res) => {
 };
 
 module.exports.logout = (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Couldn't log out, try again later");
-    }
-
-    res.clearCookie("connect.sid");
-
-    return res.status(200).redirect("/login");
-  });
+  res.clearCookie("token");
+  return res.status(200).redirect("/login");
 };

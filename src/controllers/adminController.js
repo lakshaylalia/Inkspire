@@ -4,7 +4,7 @@ const userModel = require("../models/userModel");
 
 module.exports.renderAdminDashboard = async (req, res) => {
   try {
-    let adminId = req.session.user.id;
+    let adminId = req.user.id;
 
     let admin = await adminModel.findOne({ _id: adminId });
     let posts = await postModel.find();

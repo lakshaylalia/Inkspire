@@ -1,25 +1,25 @@
 const postModel = require("../models/postModel.js");
 const userModel = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
-const { post } = require("../routes/indexRoutes.js");
+const jwt = require("jsonwebtoken");
 
 module.exports.renderEditProfile = async (req, res) => {
   try {
-    const email = req.session.user.email;
+    const email = req.user.email;
 
     const user = await userModel.findOne({ email });
 
-    if (!user) return res.status(401).send({ messaage: "Invalid Request" });
+    if (!user) return res.status(401).send({ message: "Invalid Request" });
 
     res.render("editProfile", { user });
   } catch (err) {
-    return res.status(500).send("Soemthing went wrong");
+    return res.status(500).send("Something went wrong");
   }
 };
 
 module.exports.updateProfile = async (req, res) => {
   try {
-    const id = req.session.user.id;
+    const id = req.user.id;
 
     let user = await userModel.findById(id);
     if (!user) return res.status(401).send({ message: "Invalid Request" });
@@ -42,9 +42,16 @@ module.exports.updateProfile = async (req, res) => {
       updateData.password = hash;
     }
 
-    await userModel.findByIdAndUpdate(id, { $set: updateData });
-    req.session.user.name = updateData.name;
-    req.session.user.email = updateData.email;
+    const updatedUser = await userModel.findByIdAndUpdate(id, { $set: updateData }, { new: true });
+    
+    // Sign new token to update email/name in cookies
+    const token = jwt.sign(
+      { email: updatedUser.email, id: updatedUser._id, isAdmin: updatedUser.isAdmin || false },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+    res.cookie("token", token, { httpOnly: true, secure: false });
+
     res.redirect("/user/profile");
   } catch (err) {
     console.error("Error updating profile:", err);
@@ -55,7 +62,7 @@ module.exports.updateProfile = async (req, res) => {
 module.exports.updateImage = async (req, res) => {
   try {
     const user = await userModel.findOneAndUpdate(
-      { email: req.session.user.email },
+      { email: req.user.email },
       { $set: { image: req.file.buffer } },
       { new: true, runValidators: true }
     );
@@ -73,15 +80,12 @@ module.exports.updateImage = async (req, res) => {
 module.exports.getProfile = async (req, res) => {
   try {
     let user = await userModel
-      .findOne({ email: req.session.user.email })
+      .findOne({ email: req.user.email })
       .populate("posts");
     let imageBase64 = null;
     if (user.image) {
       imageBase64 = user.image.toString("base64");
     }
-    const posts = await userModel
-      .findOne({ email: req.session.user.email })
-      .populate("posts");
   
     res.render("userProfile", { user, imageBase64 });
   } catch (err) {
@@ -94,18 +98,10 @@ module.exports.deleteAccount = async (req, res) => {
     const id = req.params.id;
 
     await userModel.findByIdAndDelete(id);
-    
     await postModel.deleteMany({ owner: id });
 
-  
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).send({ message: "Error ending session." });
-      }
-
-      res.redirect("/login");
-    });
-
+    res.clearCookie("token");
+    res.redirect("/login");
   } catch (err) {
     return res.status(500).send({ message: "Something went wrong, Try again later" });
   }
@@ -147,7 +143,7 @@ module.exports.getAllUsers = async (req, res) => {
 
 module.exports.handleFollow = async (req, res) => {
   try {
-    let id = req.session.user.id;
+    let id = req.user.id;
     let user = await userModel.findOne({ _id: id });
     let actionId = req.params.id;
     let actionUser = await userModel.findOne({ _id: actionId });
